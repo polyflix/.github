@@ -1,0 +1,5 @@
+{
+  "name": "Polyflix Spring Boot starter workflow",
+  "description": "This workflow is a starter workflow for every Polyflix Spring Boot based application.",
+  "filePatterns": ["pom.xml$"]
+}

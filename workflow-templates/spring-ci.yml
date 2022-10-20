@@ -1,0 +1,27 @@
+name: Polyflix Spring Boot CI
+
+on:
+  push:
+    branches: [ $default-branch ]
+  pull_request:
+    branches: [ $default-branch ]
+    
+jobs:
+  build:
+    runs-on: maven:3-openjdk-18-slim
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build
+        env:
+          MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository -Dhttps.protocols=TLSv1.2 -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Djansi.force=true"
+          MAVEN_CLI_OPTS: "--errors --fail-at-end --show-version -Dstyle.color=always"
+        run: mvn ${MAVEN_CLI_OPTS} clean package
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: .m2
+          key: maven-deps-${GITHUB_SHA}
+          restore-keys: maven-deps-
+
+    
+
