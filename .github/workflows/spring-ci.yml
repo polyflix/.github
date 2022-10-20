@@ -27,13 +27,9 @@ jobs:
           retention-days: 1
 
   package:
-    runs-on: ubuntu-22.04
     # Package only if branch is main
     if: github.ref == 'refs/head/main'
+    uses: polyflix/.github/.github/workflows/package-image.yml@main
     needs: build
-    steps:
-      - name: Download build artifacts
-        uses: actions/download-artifacts@v3
-        with:
-          name: build
-      - uses: polyflix/.github/.github/workflows/package-image.yml@main
+    with:
+      artifact_id: build
