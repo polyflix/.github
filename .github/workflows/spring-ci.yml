@@ -32,4 +32,4 @@ jobs:
     uses: polyflix/.github/.github/workflows/package-image.yml@main
     needs: build
     with:
-      artifact_id: build
+      artifact-id: build
