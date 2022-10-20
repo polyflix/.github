@@ -19,7 +19,7 @@ jobs:
       
       # Upload the target directory if the branch is main  
       - name: Upload target/ directory for packaging
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' || contains(github.ref, 'refs/tags/')
         uses: actions/upload-artifact@v3
         with:
           name: build
@@ -27,8 +27,8 @@ jobs:
           retention-days: 1
 
   package:
-    # Package only if branch is main
-    if: github.ref == 'refs/heads/main'
+    # Package only if branch is main or tag
+    if: github.ref == 'refs/heads/main' || contains(github.ref, 'refs/tags/')
     uses: polyflix/.github/.github/workflows/package-image.yml@main
     needs: build
     with:
