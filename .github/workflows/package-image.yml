@@ -1,6 +1,10 @@
 on:
   workflow_call:
     inputs:
+      download-artifact:
+        required: false
+        type: boolean
+        default: false
       artifact-id:
         required: false
         type: string
@@ -14,11 +18,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Download build artifacts
-        if: inputs.artifact_id != ''
+      - name: Download artifacts
+        if: ${{ inputs.download-artifact }}
         uses: actions/download-artifact@v3
         with:
-          name: build
+          name: ${{ inputs.artifact-id }}
       
       - name: Log in to the Container Registry
         uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9

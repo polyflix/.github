@@ -32,4 +32,5 @@ jobs:
     uses: polyflix/.github/.github/workflows/package-image.yml@main
     needs: build
     with:
+      download-artifact: true
       artifact-id: build
