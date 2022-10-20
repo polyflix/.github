@@ -20,7 +20,7 @@ jobs:
       # Upload the target directory if the branch is main  
       - name: Upload target/ directory for packaging
         if: github.ref == 'refs/head/main'
-        uses: actions/upload-artifacts@v3
+        uses: actions/upload-artifact@v3
         with:
           name: build
           path: target/
