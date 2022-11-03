@@ -2,6 +2,31 @@ on:
   workflow_call:
 
 jobs:
+  code_review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+          cache: "npm"
+      - name: Set npm registry access
+        env:
+          GITLAB_REGISTRY: ${ secrets.GITLAB_REGISTRY_TOKEN }
+        run: |
+          npm config set @polyflix:registry \
+          https://gitlab.polytech.umontpellier.fr/api/v4/projects/1343/packages/npm/
+          echo "//gitlab.polytech.umontpellier.fr/api/v4/projects/1343/packages/npm/:_authToken=$GITLAB_REGISTRY">.npmrc
+      - run: npm ci
+      - name: Audit
+        continue-on-error: true
+        run: npm run audit
+      - name: Lint
+        run: npm run lint --if-exists
+      - name: Format
+        run: npm run format:check --if-exists
+
   build:
     runs-on: ubuntu-22.04
     steps:
