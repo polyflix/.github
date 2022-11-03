@@ -1,6 +1,6 @@
 on:
   workflow_call:
-    
+
 jobs:
   build:
     runs-on: ubuntu-22.04
@@ -16,8 +16,8 @@ jobs:
           MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Djansi.force=true"
           MAVEN_CLI_OPTS: "--errors --fail-at-end --show-version -Dstyle.color=always"
         run: mvn ${MAVEN_CLI_OPTS} clean package
-      
-      # Upload the target directory if the branch is main  
+
+      # Upload the target directory if the branch is main or tag
       - name: Upload target/ directory for packaging
         if: github.ref == 'refs/heads/main' || contains(github.ref, 'refs/tags/')
         uses: actions/upload-artifact@v3

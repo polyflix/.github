@@ -1,0 +1,42 @@
+on:
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+          cache: "npm"
+      - name: Set npm registry access
+        env:
+          GITLAB_REGISTRY: ${{ secrets.GITLAB_REGISTRY_TOKEN }}
+        run: |
+          npm config set @polyflix:registry \
+          https://gitlab.polytech.umontpellier.fr/api/v4/projects/1343/packages/npm/
+          echo "//gitlab.polytech.umontpellier.fr/api/v4/projects/1343/packages/npm/:_authToken=$GITLAB_REGISTRY">.npmrc
+      - name: Install npm
+        run: npm ci
+      - name: Build
+        run: npm run build
+
+      # Upload the dist directory if the branch is main or tag
+      - name: Upload dist/ directory for packaging
+        if: github.ref == 'refs/heads/main' || contains(github.ref, 'refs/tags/')
+        uses: actions/upload-artifact@v3
+        with:
+          name: build
+          path: dist/
+          retention-days: 1
+
+  package:
+    # Package only if branch is main or tag
+    if: github.ref == 'refs/heads/main' || contains(github.ref, 'refs/tags/')
+    uses: polyflix/.github/.github/workflows/package-image.yml@main
+    needs: build
+    with:
+      artifact-id: build
+      artifact-download: true
+      artifact-download-dir: dist
