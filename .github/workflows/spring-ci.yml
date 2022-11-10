@@ -26,6 +26,11 @@ jobs:
           path: target/
           retention-days: 1
 
+  release:
+    # Package only if branch is main
+    if: github.ref == 'refs/heads/main'
+    uses: polyflix/.github/.github/workflows/release-drafter.yml@main
+
   package:
     # Package only if branch is main or tag
     if: github.ref == 'refs/heads/main' || contains(github.ref, 'refs/tags/')
