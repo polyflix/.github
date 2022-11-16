@@ -34,6 +34,7 @@ jobs:
 
   build:
     runs-on: ubuntu-22.04
+    needs: code_review
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
