@@ -26,7 +26,7 @@ jobs:
       - run: npm ci
       - name: Audit
         continue-on-error: true
-        run: npm run audit
+        run: npm audit
       - name: Lint
         run: npm run lint --if-exists
       - name: Format
