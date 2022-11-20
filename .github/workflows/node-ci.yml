@@ -87,4 +87,4 @@ jobs:
       artifact-download: true
       artifact-download-dir: dist
       dockerfile-path: Dockerfile.migrations
-      docker-metadata-flavor: suffix=migrations
+      docker-metadata-flavor: suffix=-migrations
