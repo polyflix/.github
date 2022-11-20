@@ -5,6 +5,9 @@ on:
         required: false
         type: boolean
         default: false
+    secrets:
+      GITLAB_REGISTRY_TOKEN:
+        required: true
 
 jobs:
   code_review:
