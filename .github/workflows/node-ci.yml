@@ -18,7 +18,7 @@ jobs:
           cache: "npm"
       - name: Set npm registry access
         env:
-          GITLAB_REGISTRY: ${ secrets.GITLAB_REGISTRY_TOKEN }
+          GITLAB_REGISTRY: ${{ secrets.GITLAB_REGISTRY_TOKEN }}
         run: |
           npm config set @polyflix:registry \
           https://gitlab.polytech.umontpellier.fr/api/v4/projects/1343/packages/npm/
@@ -28,9 +28,9 @@ jobs:
         continue-on-error: true
         run: npm audit
       - name: Lint
-        run: npm run lint --if-exists
+        run: npm run lint --if-present
       - name: Format
-        run: npm run format:check --if-exists
+        run: npm run format:check --if-present
 
   build:
     runs-on: ubuntu-22.04
