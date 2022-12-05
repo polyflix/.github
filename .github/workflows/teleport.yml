@@ -1,0 +1,47 @@
+# This is a basic workflow to help you get started.
+# it will take the following action whenever a push is made to the "main" branch.
+on:
+  workflow_call:
+
+jobs:
+  demo:
+    permissions:
+      # The "id-token: write" permission is required or tbot will not be able to authenticate.
+      id-token: write
+      contents: read
+    # The name of the workflow, and the Linux distro to be used to perform the required steps.
+    name: guide-demo
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Fetch Teleport binaries
+        uses: teleport-actions/setup@v1
+        with:
+          version: 11.0.3
+      - name: Fetch credentials
+        run: >
+          tbot start
+          --join-method=github
+          --token=github-actions
+          --auth-server=teleport.alexandreburgoni.fr:53
+          --oneshot
+          --destination-dir=/opt/machine-id
+          --data-dir=/opt/machine-id-data
+      - name: Select cluster
+        run: tsh kube login qapolyflix
+      - name: List nodes
+        # Enters a command from the cluster, in this case "tsh ls" using Machine ID credentials to list remote SSH nodes.
+        # Ensure that the domain "authserver.domain" matches the auth/proxy server of your own cluster.
+        run: >
+          tsh -i ./opt/machine-id/identity
+          --teleport.alexandreburgoni.fr:53
+          ls
+      # - name: Write file to remote
+      #   # Enters a command from the cluster, in this case "tsh ssh" using Machine ID credentials to gain SSH access to an SSH node, and then write the commit hash to the "github_run_log" file.
+      #   # Ensure that the domain matches the auth/proxy server, that `username` matches the username of a remote SSH username, and that hostname matches an SSH host name that is a part of the Teleport cluster configured for access.
+      #   run: >
+      #     tsh -i /opt/machine-id/identity
+      #     --proxy example.domain:443
+      #     ssh username@hostname
+      #     "echo $GITHUB_SHA >> ~/github_run_log"

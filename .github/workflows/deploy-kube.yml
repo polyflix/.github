@@ -1,32 +1,54 @@
 on:
   workflow_call:
     inputs:
-      release_name:
-        description: "Helm release name to deploy"
-        type: string
       helm_options:
+        required: false
         description: "Options to pass to helm"
         type: string
 
 jobs:
+  setup:
+    runs-on: ubuntu-22.04
+    outputs:
+      environment: ${{ steps.env.outputs.environment }}
+      kubeconfig: ${{ steps.env.outputs.kubeconfig }}
+    steps:
+      - name: Get environment
+        id: env
+        run: |
+          if  [[ "$GITHUB_REF_TYPE" == tag ]]
+          then
+            echo "environment=production" >> $GITHUB_OUTPUT
+            echo "kubeconfig=KUBECONFIG_PROD" >> $GITHUB_OUTPUT
+          else
+            echo "environment=qa" >> $GITHUB_OUTPUT
+            echo "kubeconfig=KUBECONFIG_QA" >> $GITHUB_OUTPUT
+          fi
+
   deploy:
     runs-on: ubuntu-22.04
-    environment: ${{ inputs.environment }}
+    needs: setup
     steps:
       - uses: actions/checkout@v3
-      - name: Deploy kube
-        env:
-          HELM_RELEASE_NAME: ${{ inputs.release_name }}
-          HELM_OPTIONS: ${{ inputs.helm_options }}
-          ENVIRONEMNT: ${{ jobs.deploy.environment }}
+      - name: Install Helm
         run: |
-          echo "Deployment will proceed in $ENVIRONMENT"
-          echo "Adding 'polyflix' repository to Helm ..."
+          curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+          chmod 700 get_helm.sh
+          ./get_helm.sh
+      - name: Set KUBECONFIG
+        env:
+          KUBECONFIG: ${{ secrets[needs.setup.outputs.kubeconfig] }}
+        run: |
+          mkdir ~/.kube
+          echo ${{ secrets.KUBECONFIG_QA }} | base64 -d > ~/.kube/config
+          cat ~/.kube/config
+      - name: deploy
+        run: |
+          cat ~/.kube/config
           helm repo add polyflix https://polyflix.github.io/helm-charts
-          echo "Deploying with following options: $HELM_OPTIONS"
-          helm upgrade $HELM_RELEASE_NAME polyflix/service $HELM_OPTIONS \
-            --dry-run
-            --namespace "$ENVIRONMENT" \
+          helm upgrade ${{ github.repository }} polyflix/service $HELM_OPTIONS \
+            --dry-run \
+            --namespace ${{ needs.setup.outputs.environment }} \
             --dependency-update \
             --wait-for-jobs \
             --reuse-values \
