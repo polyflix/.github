@@ -1,0 +1,86 @@
+on:
+  workflow_call:
+
+env:
+  NPM_TOKEN: "${{ secrets.NPM_TOKEN }}"
+
+jobs:
+  code_review:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+      - uses: pnpm/action-setup@v2
+        id: pnpm-install
+        with:
+          version: 7
+          run_install: false
+      - name: Get PNPM store
+        id: pnpm-cache
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+      - uses: actions/cache@v3
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+      - run: pnpm install
+      - name: Audit dependencies
+        run: pnpm audit
+        continue-on-error: true
+      - name: Lint
+        run: pnpm run --if-present lint
+      - name: Format
+        run: pnpm run --if-present format
+
+  build:
+    runs-on: ubuntu-22.04
+    needs: code_review
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+      - uses: pnpm/action-setup@v2
+        id: pnpm-install
+        with:
+          version: 7
+          run_install: false
+      - name: Get PNPM store
+        id: pnpm-cache
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+      - uses: actions/cache@v3
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+      - run: pnpm install
+      - env:
+          BUILD_MODE: docker
+        run: pnpm build
+      # Upload the dist directory if the branch is main or tag
+      - name: Upload dist/ directory for packaging
+        if: github.ref == 'refs/heads/main' || contains(github.ref, 'refs/tags/')
+        uses: actions/upload-artifact@v3
+        with:
+          name: build
+          path: apps/polyflix/dist/
+          retention-days: 1
+  release:
+    # Package only if branch is main
+    if: github.ref == 'refs/heads/main'
+    uses: polyflix/.github/.github/workflows/release-drafter.yml@main
+  package:
+    # Package only if branch is main or tag
+    if: github.ref == 'refs/heads/main' || contains(github.ref, 'refs/tags/')
+    uses: polyflix/.github/.github/workflows/package-image.yml@main
+    needs: build
+    with:
+      artifact-id: build
+      artifact-download: true
+      artifact-download-dir: dist
