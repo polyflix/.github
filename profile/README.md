@@ -11,6 +11,8 @@ Polyflix is under MIT license for the moment, [more information is available her
 
 ## I want to use this project
 
+For now, Polyflix is not available for public use, but you can still use it by cloning this repository and running it locally. You can also use the production version available on [polyflix.dopolytech.fr](https://polyflix.dopolytech.fr/).
+
 ## I want to contribute to this project
 
 All contribution to Polyflix are welcomed and will be treated with respect and care, if you want to know how to contribute, please read the [contributing documentation](https://github.com/polyflix/polyflix/blob/main/CONTRIBUTING.md)
@@ -18,3 +20,7 @@ All contribution to Polyflix are welcomed and will be treated with respect and c
 ## I found a security issue
 
 I case you want to communicate a security issue on this project, please get more details on our [security page](https://github.com/polyflix/polyflix/security)
+
+## Contact
+
+If you have any questions, feel free to contact us on [Discord](https://discord.gg/AMDF6sQnTN).
